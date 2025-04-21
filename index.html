@@ -1,1 +1,106 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Пин-понг</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #8a85ff;
+            margin: 0;
+        }
+        canvas {
+            border: 2px solid #000;
+            background-color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="600" height="500"></canvas>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const context = canvas.getContext('2d');
 
+        const paddleWidth = 10, paddleHeight = 100;
+        const ballSize = 10;
+        let paddle1Y = (canvas.height - paddleHeight) / 2;
+        let paddle2Y = (canvas.height - paddleHeight) / 2;
+        let ballX = canvas.width / 2;
+        let ballY = canvas.height / 2;
+        let ballSpeedX = 5;
+        let ballSpeedY = 2;
+
+        function draw() {
+            // Очистка канваса
+            context.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Рисуем ракетки
+            context.fillStyle = "#000";
+            context.fillRect(0, paddle1Y, paddleWidth, paddleHeight);
+            context.fillRect(canvas.width - paddleWidth, paddle2Y, paddleWidth, paddleHeight);
+
+            // Рисуем мяч
+            context.beginPath();
+            context.arc(ballX, ballY, ballSize, 0, Math.PI * 2);
+            context.fill();
+        }
+
+        function update() {
+            ballX += ballSpeedX;
+            ballY += ballSpeedY;
+
+            // Удар о верх и низ
+            if (ballY <= 0 || ballY >= canvas.height) {
+                ballSpeedY = -ballSpeedY;
+            }
+
+            // Удар о ракетки
+            if (ballX <= paddleWidth && ballY > paddle1Y && ballY < paddle1Y + paddleHeight) {
+                ballSpeedX = -ballSpeedX;
+            }
+            if (ballX >= canvas.width - paddleWidth && ballY > paddle2Y && ballY < paddle2Y + paddleHeight) {
+                ballSpeedX = -ballSpeedX;
+            }
+
+            // Если мяч выходит за границы
+            if (ballX < 0 || ballX > canvas.width) {
+                resetBall();
+            }
+        }
+
+        function resetBall() {
+            ballX = canvas.width / 2;
+            ballY = canvas.height / 2;
+            ballSpeedX = 5 * (Math.random() < 0.5 ? 1 : -1);
+            ballSpeedY = 2 * (Math.random() < 0.5 ? 1 : -1);
+        }
+
+        function gameLoop() {
+            draw();
+            update();
+            requestAnimationFrame(gameLoop);
+        }
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'ArrowUp' && paddle2Y > 0) {
+                paddle2Y -= 20;
+            }
+            if (event.key === 'ArrowDown' && paddle2Y < canvas.height - paddleHeight) {
+                paddle2Y += 20;
+            }
+            if (event.key === 'w' && paddle1Y > 0) {
+                paddle1Y -= 20;
+            }
+            if (event.key === 's' && paddle1Y < canvas.height - paddleHeight) {
+                paddle1Y += 20;
+            }
+        });
+
+        gameLoop();
+    </script>
+</body>
+</html>
